@@ -10,6 +10,7 @@ var User = require('./app/models/user');
 var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
+var User = require('./app/models/user');
 
 var app = express();
 
@@ -23,24 +24,54 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
-app.get('/', 
+app.get('/',
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
+app.get('/create',
 function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
+app.get('/login',
+function(req, res) {
+  res.render('login');
+});
+
+app.get('/signup',
+function(req, res) {
+  res.render('signup');
+});
+
+app.post('/signup', function(req, res){
+  new User({username: req.body.username}).fetch().then(function(found){
+    if (found) {
+      console.log('username exists');
+      res.end();
+    } else {
+      var user = new User({
+        username: req.body.username,
+        password: req.body.password
+      });
+
+      user.save().then(function(){
+        console.log('Created user');
+        res.end();
+      });
+    }
+  });
+  console.log(req.body.username, req.body.password);
+});
+
+app.get('/links',
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
 });
 
-app.post('/links', 
+app.post('/links',
 function(req, res) {
   var uri = req.body.url;
 
