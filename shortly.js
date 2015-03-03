@@ -41,6 +41,27 @@ function(req, res) {
   res.render('login');
 });
 
+app.post('/login',
+function(req, res) {
+  var username = req.body.username;
+  var password = req.body.password;
+  new User({username: username}).fetch().then(function(found){
+    if (found) {
+      bcrypt.compareAsync(password, found.get('salthash')).then(function(result){
+        if (result) {
+          console.log('passwords match');
+        } else {
+          console.log('passwords do not match');
+        }
+        res.end();
+      });
+    } else {
+      console.log('user login not found');
+      res.end();
+    }
+  });
+});
+
 app.get('/signup',
 function(req, res) {
   res.render('signup');
