@@ -49,30 +49,27 @@ function(req, res) {
 app.post('/signup', function(req, res){
   new User({username: req.body.username}).fetch().then(function(found){
     if (found) {
+      //do something other than just log
       console.log('username exists');
       res.end();
     } else {
       bcrypt.hashAsync(req.body.password, null, null).then(function(hash){
-        console.log('salthash:', hash);
         return hash;
       }).then(function(hash){
-        console.log('before new user, hash:', hash);
         return new User({
           username: req.body.username,
           salthash: hash
         });
       }).then(function(user) {
-        console.log('before user.save()', user);
         return user.save();
-      }).then(function(data){
-        console.log('Created user:', data);
+      }).then(function(){
+        //should do something for the user here too.
         res.end();
       }, function(error) {
         console.log('sing up post error in .then chain', error);
       });
     }
   });
-  console.log(req.body.username, req.body.password);
 });
 
 app.get('/links',
