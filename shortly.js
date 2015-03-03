@@ -57,6 +57,7 @@ function(req, res) {
         if (result) {
           console.log('passwords match');
           req.session.userID = found.get('id');
+          console.log('regenerated session', req.session);
           res.redirect(302, '/');
         } else {
           res.render('login', {err: 'Incorrect username/password'});
@@ -90,7 +91,8 @@ app.post('/signup', function(req, res){
         });
       }).then(function(user) {
         return user.save();
-      }).then(function(){
+      }).then(function(data){
+        req.session.userID = data.get('id');
         res.redirect(301, '/');
       }, function(error) {
         console.log('sing up post error in .then chain', error);
@@ -101,7 +103,8 @@ app.post('/signup', function(req, res){
 
 app.get('/links',
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
+  console.log('get /links', req.session);
+  Links.reset().query('where', 'user_id', '=', req.session.userID).fetch().then(function(links) {
     res.send(200, links.models);
   });
 });
@@ -115,7 +118,7 @@ function(req, res) {
     return res.send(404);
   }
 
-  new Link({ url: uri }).fetch().then(function(found) {
+  new Link({ url: uri }).query('where', 'user_id', '=', req.session.userID).fetch().then(function(found) {
     if (found) {
       res.send(200, found.attributes);
     } else {
@@ -128,7 +131,8 @@ function(req, res) {
         var link = new Link({
           url: uri,
           title: title,
-          base_url: req.headers.origin
+          base_url: req.headers.origin,
+          user_id: req.session.userID
         });
 
         link.save().then(function(newLink) {
