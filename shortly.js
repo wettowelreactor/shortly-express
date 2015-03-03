@@ -44,7 +44,6 @@ function(req, res) {
 app.get('/login',
 function(req, res) {
   res.render('login', {err: ''});
-  console.log(req.session.userID);
 });
 
 app.post('/login',
@@ -55,9 +54,7 @@ function(req, res) {
     if (found) {
       bcrypt.compareAsync(password, found.get('salthash')).then(function(result){
         if (result) {
-          console.log('passwords match');
           req.session.userID = found.get('id');
-          console.log('regenerated session', req.session);
           res.redirect(302, '/');
         } else {
           res.render('login', {err: 'Incorrect username/password'});
@@ -65,7 +62,6 @@ function(req, res) {
         res.end();
       });
     } else {
-      console.log('user login not found');
       res.render('login', {err: 'Incorrect username/password'});
     }
   });
@@ -79,7 +75,6 @@ function(req, res) {
 app.post('/signup', function(req, res){
   new User({username: req.body.username}).fetch().then(function(found){
     if (found) {
-      console.log('username exists');
       res.render('signup', {err: 'Username already exists'});
     } else {
       bcrypt.hashAsync(req.body.password, null, null).then(function(hash){
@@ -101,10 +96,16 @@ app.post('/signup', function(req, res){
   });
 });
 
+app.get('/privateLinks',
+function(req, res) {
+  Links.reset().query('where', 'user_id', '=', req.session.userID).fetch().then(function(links) {
+    res.send(200, links.models);
+  });
+});
+
 app.get('/links',
 function(req, res) {
-  console.log('get /links', req.session);
-  Links.reset().query('where', 'user_id', '=', req.session.userID).fetch().then(function(links) {
+  Links.reset().query('where', 'user_id', 'is', 'null').fetch().then(function(links) {
     res.send(200, links.models);
   });
 });
@@ -114,7 +115,6 @@ function(req, res) {
   var uri = req.body.url;
 
   if (!util.isValidUrl(uri)) {
-    console.log('Not a valid url: ', uri);
     return res.send(404);
   }
 
@@ -124,7 +124,6 @@ function(req, res) {
     } else {
       util.getUrlTitle(uri, function(err, title) {
         if (err) {
-          console.log('Error reading URL heading: ', err);
           return res.send(404);
         }
 

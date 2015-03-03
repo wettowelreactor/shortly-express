@@ -5,6 +5,7 @@ Shortly.Router = Backbone.Router.extend({
 
   routes: {
     '':       'index',
+    'myLinks': 'privateLinks',
     'create': 'create'
   },
 
@@ -14,6 +15,12 @@ Shortly.Router = Backbone.Router.extend({
 
   index: function(){
     var links = new Shortly.Links();
+    var linksView = new Shortly.LinksView({ collection: links });
+    this.swapView(linksView);
+  },
+
+  privateLinks: function() {
+    var links = new Shortly.PrivateLinks();
     var linksView = new Shortly.LinksView({ collection: links });
     this.swapView(linksView);
   },

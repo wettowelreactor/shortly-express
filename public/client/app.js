@@ -3,7 +3,8 @@ window.Shortly = Backbone.View.extend({
 
   events: {
     'click li a.index':  'renderIndexView',
-    'click li a.create': 'renderCreateView'
+    'click li a.create': 'renderCreateView',
+    'click li a.private': 'renderPrivateView'
   },
 
   initialize: function(){
@@ -29,6 +30,12 @@ window.Shortly = Backbone.View.extend({
   renderCreateView: function(e){
     e && e.preventDefault();
     this.router.navigate('/create', { trigger: true });
+  },
+
+  renderPrivateView: function(e) {
+    console.log('about to render private view');
+    e && e.preventDefault();
+    this.router.navigate('/myLinks', { trigger: true });
   },
 
   updateNav: function(routeName){
