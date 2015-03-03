@@ -25,6 +25,16 @@ app.use(partials());
 app.use(session({
   secret: 'when pigs fly'
 }));
+
+app.use('/myLinks', function(req, res, next) {
+  console.log('in our middleware');
+  if(req.session.userID) {
+    next();
+  } else {
+    res.redirect(302, '/login');
+  }
+});
+
 app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -37,6 +47,11 @@ function(req, res) {
 });
 
 app.get('/create',
+function(req, res) {
+  res.render('index');
+});
+
+app.get('/myLinks',
 function(req, res) {
   res.render('index');
 });

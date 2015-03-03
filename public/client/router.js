@@ -23,6 +23,7 @@ Shortly.Router = Backbone.Router.extend({
     var links = new Shortly.PrivateLinks();
     var linksView = new Shortly.LinksView({ collection: links });
     this.swapView(linksView);
+    console.log('in backbone route for plink');
   },
 
   create: function(){
