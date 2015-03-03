@@ -2,6 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var Promise = require('bluebird');
+var bcrypt = Promise.promisifyAll(require('bcrypt-nodejs'));
 
 
 var db = require('./app/config');
@@ -50,14 +52,23 @@ app.post('/signup', function(req, res){
       console.log('username exists');
       res.end();
     } else {
-      var user = new User({
-        username: req.body.username,
-        password: req.body.password
-      });
-
-      user.save().then(function(){
-        console.log('Created user');
+      bcrypt.hashAsync(req.body.password, null, null).then(function(hash){
+        console.log('salthash:', hash);
+        return hash;
+      }).then(function(hash){
+        console.log('before new user, hash:', hash);
+        return new User({
+          username: req.body.username,
+          salthash: hash
+        });
+      }).then(function(user) {
+        console.log('before user.save()', user);
+        return user.save();
+      }).then(function(data){
+        console.log('Created user:', data);
         res.end();
+      }, function(error) {
+        console.log('sing up post error in .then chain', error);
       });
     }
   });
