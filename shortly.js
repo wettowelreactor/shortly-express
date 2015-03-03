@@ -2,6 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
+var MemoryStore = require('memory-store');
+var session = require('express-session');
 var Promise = require('bluebird');
 var bcrypt = Promise.promisifyAll(require('bcrypt-nodejs'));
 
@@ -20,6 +22,9 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(partials());
 // Parse JSON (uniform resource locators)
+app.use(session({
+  secret: 'when pigs fly'
+}));
 app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -39,6 +44,7 @@ function(req, res) {
 app.get('/login',
 function(req, res) {
   res.render('login');
+  console.log(req.session.userID);
 });
 
 app.post('/login',
@@ -50,6 +56,7 @@ function(req, res) {
       bcrypt.compareAsync(password, found.get('salthash')).then(function(result){
         if (result) {
           console.log('passwords match');
+          req.session.userID = found.get('id');
         } else {
           console.log('passwords do not match');
         }
