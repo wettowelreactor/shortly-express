@@ -43,7 +43,7 @@ function(req, res) {
 
 app.get('/login',
 function(req, res) {
-  res.render('login');
+  res.render('login', {err: ''});
   console.log(req.session.userID);
 });
 
@@ -57,29 +57,29 @@ function(req, res) {
         if (result) {
           console.log('passwords match');
           req.session.userID = found.get('id');
+          res.redirect(302, '/');
         } else {
-          console.log('passwords do not match');
+          res.render('login', {err: 'Incorrect username/password'});
         }
         res.end();
       });
     } else {
       console.log('user login not found');
-      res.end();
+      res.render('login', {err: 'Incorrect username/password'});
     }
   });
 });
 
 app.get('/signup',
 function(req, res) {
-  res.render('signup');
+  res.render('signup', {err: ''});
 });
 
 app.post('/signup', function(req, res){
   new User({username: req.body.username}).fetch().then(function(found){
     if (found) {
-      //do something other than just log
       console.log('username exists');
-      res.end();
+      res.render('signup', {err: 'Username already exists'});
     } else {
       bcrypt.hashAsync(req.body.password, null, null).then(function(hash){
         return hash;
@@ -91,8 +91,7 @@ app.post('/signup', function(req, res){
       }).then(function(user) {
         return user.save();
       }).then(function(){
-        //should do something for the user here too.
-        res.end();
+        res.redirect(301, '/');
       }, function(error) {
         console.log('sing up post error in .then chain', error);
       });
