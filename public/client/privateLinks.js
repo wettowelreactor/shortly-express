@@ -1,4 +1,4 @@
 Shortly.PrivateLinks = Backbone.Collection.extend({
-  model: Shortly.Link,
+  model: Shortly.PLink,
   url: '/privateLinks'
 });

@@ -21,9 +21,13 @@ Shortly.Router = Backbone.Router.extend({
 
   privateLinks: function() {
     var links = new Shortly.PrivateLinks();
-    var linksView = new Shortly.LinksView({ collection: links });
-    this.swapView(linksView);
-    console.log('in backbone route for plink');
+    console.log('in backbone route for plink', links);
+    if (!links.models[0].get('notLoggedIn')) {
+      var linksView = new Shortly.LinksView({ collection: links });
+      this.swapView(linksView);
+    } else {
+      this.router.navigate('/login');
+    }
   },
 
   create: function(){

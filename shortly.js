@@ -18,6 +18,16 @@ var User = require('./app/models/user');
 
 var app = express();
 
+var isLoggedIn = function(req, res, next) {
+  console.log('in our middleware');
+  if(req.session.userID) {
+    req.session.loggedIn = true;
+  } else {
+    req.session.loggedIn = false;
+  }
+  next();
+};
+
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 app.use(partials());
@@ -26,14 +36,6 @@ app.use(session({
   secret: 'when pigs fly'
 }));
 
-app.use('/myLinks', function(req, res, next) {
-  console.log('in our middleware');
-  if(req.session.userID) {
-    next();
-  } else {
-    res.redirect(302, '/login');
-  }
-});
 
 app.use(bodyParser.json());
 // Parse forms (signup/login)
@@ -51,9 +53,13 @@ function(req, res) {
   res.render('index');
 });
 
-app.get('/myLinks',
+app.get('/myLinks', isLoggedIn,
 function(req, res) {
-  res.render('index');
+  if (req.session.loggedIn === true) {
+    res.render('index');
+  } else {
+    res.redirect(302, '/login');
+  }
 });
 
 app.get('/login',
@@ -111,11 +117,15 @@ app.post('/signup', function(req, res){
   });
 });
 
-app.get('/privateLinks',
+app.get('/privateLinks', isLoggedIn,
 function(req, res) {
-  Links.reset().query('where', 'user_id', '=', req.session.userID).fetch().then(function(links) {
-    res.send(200, links.models);
-  });
+  if (req.session.loggedIn) {
+    Links.reset().query('where', 'user_id', '=', req.session.userID).fetch().then(function(links) {
+      res.send(200, links.models);
+    });
+  } else {
+    res.send(200, [{'error': true}]);
+  }
 });
 
 app.get('/links',
